@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geologica, JetBrains_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryProvider } from "@/providers/query-provider";
+import { AuthProvider } from "@/features/auth/auth-provider";
 import "./globals.css";
 
 const geologica = Geologica({
@@ -31,7 +33,11 @@ export default function RootLayout({
       className={`${geologica.variable} ${jetbrainsMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <TooltipProvider delay={300}>{children}</TooltipProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <TooltipProvider delay={300}>{children}</TooltipProvider>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

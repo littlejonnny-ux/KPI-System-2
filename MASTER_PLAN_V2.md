@@ -324,7 +324,7 @@ src/
 ---
 
 ## ЭТАП 3 — Аутентификация + Layout + Роутинг
-**Статус:** ⬜ Не начат
+**Статус:** ✅ Завершён
 **Требует участия пользователя:** НЕТ
 **Ожидаемое время:** 1 сессия
 
@@ -332,8 +332,8 @@ src/
 Auth через Supabase, middleware, AppLayout с sidebar, role-based routing.
 
 ### Что сделать
-1. Supabase auth middleware (`middleware.ts`)
-2. Auth context (`use-auth.ts`): session, profile, roles, signIn, signOut
+1. Supabase auth middleware (`proxy.ts` — Next.js 16 convention)
+2. Auth context (`auth-provider.tsx`): session, profile, roles, signIn, signOut
 3. Login page: RHF + Zod, shadcn/ui Card + Input + Button
 4. AppLayout: sidebar с навигацией по ролям (раздел 2.1 ТЗ), header, responsive
 5. Role-based route protection
@@ -346,12 +346,12 @@ Auth через Supabase, middleware, AppLayout с sidebar, role-based routing.
 - Неавторизованный → редирект на login
 
 ### Чеклист
-- [ ] Middleware настроен
-- [ ] Auth context работает
-- [ ] Login page работает
-- [ ] AppLayout с sidebar по ролям
-- [ ] Role-based routing
-- [ ] TanStack Query provider
+- [x] Middleware настроен (`src/proxy.ts` + `src/lib/supabase/middleware.ts` с x-pathname)
+- [x] Auth context работает (`src/features/auth/auth-provider.tsx`)
+- [x] Login page работает (`src/app/(auth)/login/page.tsx`)
+- [x] AppLayout с sidebar по ролям (`src/features/auth/components/sidebar-nav.tsx`)
+- [x] Role-based routing (`src/app/(dashboard)/layout.tsx` + ROUTE_PERMISSIONS)
+- [x] TanStack Query provider (`src/providers/query-provider.tsx`)
 
 ---
 
