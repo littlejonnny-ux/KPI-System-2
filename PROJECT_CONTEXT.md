@@ -18,7 +18,7 @@
 |---|---|
 | GitHub репозиторий | `github.com/littlejonnny-ux/KPI-System-2` |
 | Supabase проект | `kpi-system-2` (West EU — Ireland) |
-| Supabase URL | TBD |
+| Supabase URL | `https://bqzjqrngjezqsaluupft.supabase.co` |
 | Vercel URL | TBD |
 | Admin логин | `admin` |
 | Admin email в Supabase Auth | `admin@kpi.local` |
