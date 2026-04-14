@@ -356,7 +356,7 @@ Auth через Supabase, middleware, AppLayout с sidebar, role-based routing.
 ---
 
 ## ЭТАП 4 — calculations.ts + тесты
-**Статус:** ⬜ Не начат
+**Статус:** ✅ Завершён (2026-04-14)
 **Требует участия пользователя:** НЕТ
 **Ожидаемое время:** 1 сессия
 
@@ -374,10 +374,10 @@ Auth через Supabase, middleware, AppLayout с sidebar, role-based routing.
 - Формулы идентичны текущей реализации (ТЗ — source of truth)
 
 ### Чеклист
-- [ ] calculations.ts с полной типизацией
-- [ ] constants.ts
-- [ ] ≥30 unit-тестов
-- [ ] Все тесты проходят
+- [x] calculations.ts с полной типизацией
+- [x] constants.ts
+- [x] ≥30 unit-тестов (48 тестов)
+- [x] Все тесты проходят (48/48)
 
 ---
 
