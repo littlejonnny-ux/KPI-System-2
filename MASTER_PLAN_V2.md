@@ -382,7 +382,7 @@ Auth через Supabase, middleware, AppLayout с sidebar, role-based routing.
 ---
 
 ## ЭТАП 5 — Data layer (TanStack Query hooks)
-**Статус:** ⬜ Не начат
+**Статус:** ✅ Завершён
 **Требует участия пользователя:** НЕТ
 **Ожидаемое время:** 1 сессия
 
@@ -405,12 +405,12 @@ Hooks по модулям (features/):
 - Тестовый запрос из приложения загружает данные из Supabase
 
 ### Чеклист
-- [ ] kpi-cards hooks
-- [ ] kpi-library hooks
-- [ ] participants hooks
-- [ ] trigger-goals hooks
-- [ ] shared hooks (dictionaries, events, audit)
-- [ ] Typecheck проходит
+- [x] kpi-cards hooks
+- [x] kpi-library hooks
+- [x] participants hooks
+- [x] trigger-goals hooks
+- [x] shared hooks (dictionaries, events, audit)
+- [x] Typecheck проходит
 
 ---
 
