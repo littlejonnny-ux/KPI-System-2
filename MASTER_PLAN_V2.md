@@ -1,6 +1,6 @@
 # MASTER PLAN: KPI-System v2.0
 ## Полная перестройка в целевом стеке
-### Версия 2.1 — гармонизирована с Vibe-Coding Framework (после аудита апрель 2026)
+### Версия 2.2 — добавлено E2E-тестирование в этапы 9–11 (апрель 2026)
 
 ---
 
@@ -19,7 +19,8 @@
 | Backend / БД | Supabase (PostgreSQL + Auth + RLS enforced) — новый проект |
 | Server state | TanStack Query v5 |
 | Формы | React Hook Form + Zod |
-| Тестирование | Vitest + Testing Library |
+| Тестирование (unit/integration) | Vitest + Testing Library |
+| Тестирование (E2E) | Playwright |
 | Хостинг | Vercel (auto-deploy при push в main) |
 | Аутентификация | Supabase Auth (email/password) |
 
@@ -36,6 +37,8 @@
 Этот план НЕ заменяет `.claude/VIBE_CODING_WORKFLOW.md`. Claude Code в каждой сессии СНАЧАЛА читает CLAUDE.md → VIBE_CODING_WORKFLOW.md (определяет тир, активирует механизмы по TRIGGER_MAP), ЗАТЕМ находит текущий этап в этом плане. Правила из framework (CYCLE.md, TRIGGER_MAP.md, ARCHITECTURE_PRINCIPLES.md, database-workflow.md) имеют приоритет над этим планом при конфликте.
 
 **Git convention:** `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:` — conventional commits (из git-workflow.md). Ветки: `feature/название`, `fix/описание`.
+
+**E2E-тестирование:** Проект использует тир STANDARD — E2E обязательны при наличии UI-механик. Полная механика — в `.claude/skills/e2e-testing/SKILL.md`. Playwright (`@playwright/test`) устанавливается как dev-dependency в начале Stage 9. Трёхуровневая схема запуска (пропуск / targeted / full scope) применяется автоматически по `git diff` перед merge. Счётчик `merges_without_full_e2e` хранится в `PROJECT_CONTEXT.md`.
 
 **Принцип работы:** Каждый этап — самодостаточный. Claude Code находит текущий этап (по чеклисту), выполняет по CYCLE.md (STANDARD тир), отмечает завершение. Пользователь проверяет результат и запускает следующую сессию.
 
@@ -493,12 +496,22 @@ Hooks по модулям (features/):
 ## ЭТАП 9 — Карты KPI (главная механика)
 **Статус:** ⬜ Не начат
 **Требует участия пользователя:** НЕТ
-**Ожидаемое время:** 2 сессии
+**Ожидаемое время:** 2–3 сессии
 
 ### Задача
 Самый сложный этап. Карты KPI: список, детальная страница (URL-addressable), workflow согласования, ввод факта, составные KPI, формула вознаграждения.
 
 ### Что сделать
+
+**E2E-инфраструктура (выполнить первым):**
+0. Установить Playwright: `npm install -D @playwright/test && npx playwright install chromium`
+0. Создать `playwright.config.ts` по шаблону из `.claude/skills/e2e-testing/SKILL.md`
+0. Создать `src/__tests__/e2e/helpers/` (auth.helper.ts, seed.helper.ts, constants.ts) по шаблонам из skill
+0. Добавить `"test:e2e": "playwright test"` в package.json scripts
+0. Добавить E2E-job в `.github/workflows/ci.yml` по шаблону из `CLAUDE_MD_BLUEPRINT.md`
+0. Добавить строку `**E2E full scope:** инициализация, merges без full scope: 0` в `PROJECT_CONTEXT.md`
+
+**Реализация:**
 1. `kpi-cards/page.tsx` — список с фильтрами
 2. `kpi-cards/[id]/page.tsx` — детальная карта (deep link)
 3. Компоненты: KpiCardHeader, KpiCardReward, TriggerGoalBlock, KpiLineRow, L2LineRow, FactInput, AddLineModal, CommentModal, KpiCardAudit
@@ -515,6 +528,9 @@ Hooks по модулям (features/):
 - [ ] Unapprove + Return
 - [ ] Составные KPI (оба типа)
 - [ ] Формула вознаграждения
+- [ ] E2E-инфраструктура установлена (Playwright, config, helpers, CI job)
+- [ ] E2E-тесты написаны для ключевых сценариев карт KPI
+- [ ] Full scope E2E прогон пройден (завершение Stage — триггер Уровня 3)
 
 ---
 
@@ -531,6 +547,7 @@ Hooks по модулям (features/):
 5. Лента событий
 6. Архив (read-only approved)
 7. Профиль (смена пароля)
+8. E2E: targeted тесты для каждой новой страницы (participants, trigger-goals, dictionaries, approvals, events, archive, profile)
 
 ### Чеклист
 - [ ] Участники
@@ -540,6 +557,8 @@ Hooks по модулям (features/):
 - [ ] Лента событий
 - [ ] Архив
 - [ ] Профиль
+- [ ] Targeted E2E-тесты для новых страниц
+- [ ] Full scope E2E прогон пройден (завершение Stage — триггер Уровня 3)
 
 ---
 
@@ -549,13 +568,16 @@ Hooks по модулям (features/):
 **Ожидаемое время:** 1 сессия
 
 ### Что сделать
-1. E2E smoke test: логин → создать участника → создать KPI → создать карту → ввести факт → согласовать → проверить approved
-2. Vercel deployment: проверить production build
-3. /update-docs — обновить все живые документы
-4. Финальный /code-review всего проекта
+1. Full scope E2E прогон: `npx playwright test` — все накопленные тесты из Stage 9 + 10 + 11
+2. Проверка регрессий: ни один ранее проходивший тест не должен упасть
+3. E2E smoke test (если не покрыт): логин → создать участника → создать KPI → создать карту → ввести факт → согласовать → проверить approved
+4. Vercel deployment: проверить production build
+5. /update-docs — обновить все живые документы
+6. Финальный /code-review всего проекта
 
 ### Чеклист
-- [ ] E2E smoke test пройден
+- [ ] Full scope E2E прогон пройден (все тесты из Stage 9–11)
+- [ ] Регрессий нет (все ранее проходившие тесты по-прежнему проходят)
 - [ ] Vercel production работает
 - [ ] Живые документы обновлены
 - [ ] Финальный code-review пройден
@@ -575,10 +597,10 @@ Hooks по модулям (features/):
 | 6 | Серверные API routes | 1 | НЕТ |
 | 7 | Дашборды | 1 | НЕТ |
 | 8 | Библиотека KPI | 1–2 | НЕТ |
-| 9 | Карты KPI | 2 | НЕТ |
+| 9 | Карты KPI + E2E-инфраструктура | 2–3 | НЕТ |
 | 10 | Остальные страницы | 1–2 | НЕТ |
 | 11 | Финализация | 1 | ДА (проверка) |
-| **Итого** | | **13–15** | **3 точки участия** |
+| **Итого** | | **14–16** | **3 точки участия** |
 
 ---
 
