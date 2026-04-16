@@ -1,4 +1,5 @@
 {
+  "model": "sonnet",
   "env": {
     "MAX_THINKING_TOKENS": "10000",
     "CLAUDE_CODE_SUBAGENT_MODEL": "haiku",
@@ -7,6 +8,7 @@
     "COMPACT_THRESHOLD": "50"
   },
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash(for dir:*)",
       "Bash(do touch:*)",
@@ -21,16 +23,8 @@
       "Bash(node -e \"require\\(''./.claude/hooks/scripts/suggest-compact.js''\\)\")",
       "Bash(node -e \"require\\(''./.claude/hooks/scripts/session-start.js''\\)\")",
       "Bash(node -e \"require\\(''./.claude/hooks/scripts/session-end.js''\\)\")",
-      "Bash(gh auth:*)",
-      "Bash(where gh:*)",
-      "Read(//c/Program Files/**)",
-      "Read(//c/Users/emikhalin/AppData/Local/Programs/**)",
-      "Bash(git --version)",
-      "Bash(curl --version)",
-      "Bash(powershell.exe -Command \"gh --version\")",
-      "Bash(git config:*)"
-    ],
-    "defaultMode": "bypassPermissions"
-  },
-  "model": "sonnet"
+      "Bash(npx playwright:*)",
+      "Bash(npm install:*)"
+    ]
+  }
 }
