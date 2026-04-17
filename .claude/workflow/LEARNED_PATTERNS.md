@@ -64,3 +64,40 @@
 - **Паттерн:** Zod v4 (`zod@^4.x`) — major rewrite, но `import { z } from "zod"` и базовый API (`z.object`, `z.string().email()`, `z.infer<>`) остались совместимы. `zodResolver` из `@hookform/resolvers@^5.x` работает с Zod v4 без изменений.
 - **Почему нетривиально:** Большинство migration guides пугают breaking changes. В реальности для стандартных форм (string, email, min, required) переход с Zod v3 → v4 требует только обновления пакета. Формат ошибок изменился, но `formState.errors` через zodResolver абстрагирует это.
 - **Пример:** `loginSchema` в `login/page.tsx` — чистый Zod v4, без изменений синтаксиса vs v3.
+
+---
+
+### 2026-04-14 Next.js App Router: server-side role guard через headers() + ROUTE_PERMISSIONS
+- **Область:** Next.js 16 App Router + Supabase SSR
+- **Паттерн:** Серверный layout.tsx читает `x-pathname` из `headers()` (установлен proxy.ts), сверяет с `ROUTE_PERMISSIONS: Record<string, SystemRole[]>`, делает `redirect('/dashboard')` при нарушении. Логика: перебор prefix-ключей + `pathname.startsWith(prefix + '/')`.
+- **Почему нетривиально:** В App Router нельзя делать redirect в middleware после проверки session (middleware не имеет доступа к Supabase session cookie при edge runtime). Layout.tsx — правильное место для role guard, потому что здесь уже есть `getUser()` и profil, а не только cookie.
+- **Пример:**
+  ```ts
+  // src/app/(dashboard)/layout.tsx
+  const pathname = (await headers()).get("x-pathname") ?? "/";
+  if (!isAllowed(pathname, profile.system_role)) redirect("/dashboard");
+  ```
+
+---
+
+### 2026-04-15 Recharts в Next.js: компонент должен быть "use client"
+- **Область:** Recharts + Next.js App Router
+- **Паттерн:** Recharts (`BarChart`, `PieChart`, `ResponsiveContainer`) использует `window`/`document` при импорте — они не SSR-совместимы. Компонент с recharts обязан иметь `"use client"` директиву, иначе сборка падает с `ReferenceError: window is not defined`.
+- **Почему нетривиально:** Recharts документация не упоминает это явно, а Next.js не всегда даёт понятную ошибку (иногда падает при `next build`, не при `next dev`).
+- **Пример:** `execution-by-user-chart.tsx` и `status-distribution-chart.tsx` — оба начинаются с `"use client"`. Данные передаются как props из серверного родителя.
+
+---
+
+### 2026-04-15 RHF useFieldArray для матричных редакторов (scale ranges / discrete points)
+- **Область:** react-hook-form v7 + бизнес-логика KPI
+- **Паттерн:** `useFieldArray` для динамических строк (scale ranges, discrete points). Смежные диапазоны должны быть непрерывными (max предыдущего = min следующего) — это поддерживается утилитой `calcRangeBoundsInUnits`, вызываемой при `onChange` каждой строки, а не через Zod refinement (Zod не умеет cross-field array validation удобно).
+- **Почему нетривиально:** Попытка сделать contiguous-validation через Zod `superRefine` на массиве приводит к сложным ошибкам и плохому UX (ошибки на уровне всего поля). Вычислять bounds в `onChange` — правильный подход: данные всегда консистентны, без лишних validation errors.
+- **Пример:** `scale-ranges-editor.tsx` — `useFieldArray({ name: "scaleRanges" })`, при изменении строки i вызывает `calcRangeBoundsInUnits(fields, i)` и обновляет min/max соседних строк через `setValue`.
+
+---
+
+### 2026-04-15 Supabase RPC для атомарных операций (approve_card_line)
+- **Область:** Supabase + PostgreSQL RPC
+- **Паттерн:** Бизнес-операции, требующие нескольких UPDATE в одной транзакции (например, approve line + recalculate card total + update card status), вынесены в PostgreSQL function и вызываются через `.rpc('approve_card_line', { params })`. Один round-trip, атомарность гарантирована на уровне БД.
+- **Почему нетривиально:** Альтернатива — несколько последовательных `.update()` из API route — не атомарна: при сбое на втором запросе данные окажутся в inconsistent state. RPC избегает этого без необходимости писать транзакционную логику на TypeScript.
+- **Пример:** `src/app/api/cards/approve-line/route.ts` — `supabase.rpc('approve_card_line', { line_id, approved_by })`. Функция в БД делает UPDATE kpi_card_lines + UPDATE kpi_cards в одной транзакции.
