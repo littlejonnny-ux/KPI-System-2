@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { queryKeys } from "@/features/shared/hooks/query-keys";
 import type { Tables } from "@/types/database";
-import type { KpiCardStatus } from "@/types/kpi";
+import type { KpiCardStatus, EvaluationMethod } from "@/types/kpi";
 
 // ---------------------------------------------------------------------------
 // Input types
@@ -174,6 +174,29 @@ async function returnCard(input: ReturnCardInput): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+export interface AddLineInput {
+  cardId: string;
+  name: string;
+  unit: string;
+  evaluationMethod: EvaluationMethod;
+  weight: number;
+  targetValue: number | null;
+}
+
+async function addLine(input: AddLineInput): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.from("kpi_card_lines").insert({
+    card_id: input.cardId,
+    name: input.name,
+    unit: input.unit,
+    evaluation_method: input.evaluationMethod,
+    weight: input.weight,
+    target_value: input.targetValue,
+    is_composite: false,
+  });
+  if (error) throw new Error(error.message);
+}
+
 async function deleteLine(input: DeleteLineInput): Promise<void> {
   const supabase = createClient();
   const { error } = await supabase
@@ -277,6 +300,18 @@ export function useReturnCard() {
     mutationFn: returnCard,
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.kpiCards.all });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kpiCards.detail(variables.cardId),
+      });
+    },
+  });
+}
+
+export function useAddLine() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: addLine,
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.kpiCards.detail(variables.cardId),
       });
