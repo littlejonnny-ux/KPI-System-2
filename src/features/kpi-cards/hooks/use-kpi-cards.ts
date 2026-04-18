@@ -268,7 +268,7 @@ async function fetchKpiCards(filters: KpiCardsFilters): Promise<KpiCardSummary[]
   const supabase = createClient();
   let query = supabase
     .from("kpi_cards")
-    .select("id, user_id, period_year, period_type, period_sub, status, total_execution_pct, total_reward, created_at, updated_at")
+    .select("id, user_id, period_year, period_type, period_sub, status, total_execution_pct, total_reward, created_at, updated_at, users(full_name, first_name, last_name)")
     .order("created_at", { ascending: false });
 
   if (filters.userId) query = query.eq("user_id", filters.userId);
@@ -278,19 +278,23 @@ async function fetchKpiCards(filters: KpiCardsFilters): Promise<KpiCardSummary[]
   const { data, error } = await query;
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    userId: row.user_id,
-    participantName: null,
-    periodYear: row.period_year,
-    periodType: row.period_type,
-    periodSub: row.period_sub,
-    status: row.status,
-    totalExecutionPct: row.total_execution_pct,
-    totalReward: row.total_reward,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  }));
+  return (data ?? []).map((row) => {
+    const user = (row.users as unknown) as { full_name: string | null; first_name: string; last_name: string } | null;
+    const participantName = user?.full_name ?? (user ? `${user.first_name} ${user.last_name}`.trim() : null);
+    return {
+      id: row.id,
+      userId: row.user_id,
+      participantName,
+      periodYear: row.period_year,
+      periodType: row.period_type,
+      periodSub: row.period_sub,
+      status: row.status,
+      totalExecutionPct: row.total_execution_pct,
+      totalReward: row.total_reward,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  });
 }
 
 async function fetchKpiCard(id: string): Promise<KpiCard> {

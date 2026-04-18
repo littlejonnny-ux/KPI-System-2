@@ -33,7 +33,7 @@ const ADMIN_NAV: NavItem[] = [
   { label: "Участники", href: "/participants", icon: UsersIcon },
   { label: "Библиотека KPI", href: "/library", icon: BookOpenIcon },
   { label: "Запускающие цели", href: "/objectives", icon: TargetIcon },
-  { label: "Карты KPI", href: "/cards", icon: LayoutGridIcon },
+  { label: "Карты KPI", href: "/kpi-cards", icon: LayoutGridIcon },
   { label: "Справочники", href: "/references", icon: DatabaseIcon },
   { label: "Архив", href: "/archive", icon: ArchiveIcon },
 ];
