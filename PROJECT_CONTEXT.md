@@ -120,7 +120,7 @@
 | `dashboard` | `admin-dashboard.tsx`, `approver-dashboard.tsx`, `participant-dashboard.tsx`, `cards-table.tsx`, `metric-card.tsx`, `execution-by-user-chart.tsx`, `status-distribution-chart.tsx`, `rewards-summary-table.tsx`, `status-badge.tsx`, `period-utils.ts` | — |
 | `kpi-cards` | `add-line-modal.tsx`, `comment-modal.tsx`, `fact-input.tsx`, `kpi-card-audit.tsx`, `kpi-card-header.tsx`, `kpi-card-reward.tsx`, `kpi-line-row.tsx`, `l2-line-row.tsx`, `trigger-goal-block.tsx` | `use-kpi-cards.ts`, `use-card-mutations.ts` |
 | `kpi-library` | `kpi-table.tsx`, `kpi-modal.tsx`, `kpi-filters.tsx`, `kpi-modal-schema.ts`, `kpi-properties-editor.tsx`, `kpi-period-picker.tsx`, `discrete-target-field.tsx`, `discrete-points-editor.tsx`, `scale-ranges-editor.tsx` | `use-kpi-library.ts` |
-| `participants` | — | `use-participants.ts` |
+| `participants` | `participants-table.tsx`, `participant-form-modal.tsx`, `excel-import-modal.tsx`, `password-modal.tsx` | `use-participants.ts` |
 | `trigger-goals` | — | `use-trigger-goals.ts` |
 | `shared` | — | `use-audit-log.ts`, `use-dictionaries.ts`, `use-events.ts`, `query-keys.ts` |
 | `approvals` | placeholder | — |
@@ -139,6 +139,8 @@ alert, badge, button, card, checkbox, dialog, dropdown-menu, form, input, label,
 | `src/__tests__/api-routes.test.ts` | Integration-тесты API routes |
 | `src/__tests__/setup.ts` | Vitest setup |
 | `src/__tests__/e2e/kpi-cards.spec.ts` | E2E: список и детальная страница KPI-карт |
+| `src/__tests__/e2e/participants.spec.ts` | E2E: страница участников (7 тест-кейсов) |
+| `src/__tests__/e2e/navigation.spec.ts` | E2E: базовая навигация по маршрутам |
 | `src/__tests__/e2e/helpers/auth.helper.ts` | E2E: хелпер логина |
 | `src/__tests__/e2e/helpers/seed.helper.ts` | E2E: хелперы навигации |
 | `src/__tests__/e2e/helpers/constants.ts` | E2E: константы (URL, credentials) |
@@ -160,7 +162,7 @@ src/app/
     kpi-cards/page.tsx                — список KPI-карт
     kpi-cards/[id]/page.tsx           — детальная страница KPI-карты
     library/page.tsx                  — библиотека KPI-показателей
-    participants/page.tsx             — участники (placeholder)
+    participants/page.tsx             — участники (admin-only: таблица, CRUD modal, Excel import, password modal)
     approvals/page.tsx                — согласование (placeholder)
     archive/page.tsx                  — архив (placeholder)
     events/page.tsx                   — события (placeholder)
@@ -172,6 +174,9 @@ src/app/
     cards/submit/route.ts             — подача карты на согласование
     cards/approve-line/route.ts       — согласование строки
     cards/return-line/route.ts        — возврат строки на доработку
+    participants/create/route.ts      — создание участника (Supabase Auth + users insert)
+    participants/reset-password/route.ts — сброс пароля через auth.admin.updateUserById
+    participants/import/route.ts      — bulk import через import_participants_bulk RPC
 ```
 
 ---
@@ -224,10 +229,10 @@ npm run test:e2e       # Playwright E2E tests
 | Stage 7 | ✅ Выполнено | Role-based dashboards (admin/approver/participant) с charts и KPI summary tables |
 | Stage 8 | ✅ Выполнено | KPI library с CRUD modal, filters, and table |
 | Stage 9 | 🔲 В процессе | KPI Cards — list page, detail page, E2E тесты (Session 1 завершена) |
-| Stage 10 | 🔲 Не начато | Согласование, участники, события, справочники |
+| Stage 10 | 🔲 В процессе | Участники: CRUD + Excel import + password flow (Session 1 завершена) |
 | Stage 11 | 🔲 Не начато | Vercel deploy, production hardening, full E2E scope |
 
-**Текущая стадия: Stage 9 — KPI Cards (Session 1 завершена, продолжение в следующей сессии)**
+**Текущая стадия: Stage 10 — Участники (Session 1 завершена)**
 
 ---
 
@@ -245,3 +250,4 @@ npm run test:e2e       # Playwright E2E tests
 | 2026-04-14 | Stage 7: Role-based dashboards — admin (charts + cards table), approver, participant; компоненты: MetricCard, StatusDistributionChart, ExecutionByUserChart, RewardsSummaryTable |
 | 2026-04-14 | Stage 8: KPI Library — таблица KPI с фильтрами, CRUD modal (create/edit/delete), DiscretePointsEditor, ScaleRangesEditor, KpiPeriodPicker |
 | 2026-04-15 | Stage 9 Session 1: KPI Cards list page (фильтры по статусу/году), detail page (9 subcomponents: header, reward, kpi-line-row, l2-line-row, fact-input, add-line-modal, comment-modal, kpi-card-audit, trigger-goal-block); E2E тесты (playwright.config.ts + dotenv, kpi-cards.spec.ts — 5 passed / 2 skipped); fix TypeScript: @base-ui/react Select onValueChange (string\|null); fix DB: linked auth_id в таблице users для admin@kpi.local |
+| 2026-04-19 | Stage 10 Session 1: Participants module — 4 UI компонента (participants-table, participant-form-modal, excel-import-modal, password-modal), 3 API routes (create, reset-password, import), SQL migration (import_participants_bulk RPC SECURITY DEFINER), participants/page.tsx, E2E тесты (participants.spec.ts — 7 кейсов, navigation.spec.ts обновлён); fix: DropdownMenuTrigger без asChild (Base UI), RHF+Zod4 без .pipe() transforms |

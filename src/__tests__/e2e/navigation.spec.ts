@@ -9,6 +9,7 @@ test.describe("Navigation baseline", () => {
   const routes = [
     { path: "/", name: "Dashboard" },
     { path: "/kpi-cards", name: "KPI Cards" },
+    { path: "/participants", name: "Participants" },
   ];
 
   for (const { path, name } of routes) {
