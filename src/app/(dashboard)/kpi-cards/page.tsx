@@ -95,7 +95,7 @@ export default function KpiCardsPage() {
         )}
       </div>
 
-      <Table>
+      <Table data-testid="kpi-cards-list">
         <TableHeader>
           <TableRow>
             <TableHead>Участник</TableHead>
