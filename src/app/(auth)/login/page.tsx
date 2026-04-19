@@ -65,6 +65,7 @@ export default function LoginPage() {
                 type="email"
                 placeholder="name@company.com"
                 autoComplete="email"
+                data-testid="email"
                 {...register("email")}
               />
               {errors.email && (
@@ -78,6 +79,7 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 autoComplete="current-password"
+                data-testid="password"
                 {...register("password")}
               />
               {errors.password && (
@@ -91,7 +93,7 @@ export default function LoginPage() {
               <p className="text-sm text-destructive">{serverError}</p>
             )}
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting} data-testid="submit">
               {isSubmitting ? "Вход…" : "Войти"}
             </Button>
           </form>

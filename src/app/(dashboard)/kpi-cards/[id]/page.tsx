@@ -70,7 +70,7 @@ export default function KpiCardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="kpi-card-detail">
       <Button
         variant="ghost"
         size="sm"
