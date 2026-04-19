@@ -95,3 +95,13 @@
 - **Результативно:** code-reviewer КРИТИЧЕН (423-строчный modal, useFieldArray, auto-linkage, duplicate detection); e2e-testing критичен (CRUD flow — ключевая механика); security-reviewer полезен (user input в формах → мутации в БД через hooks)
 - **Избыточно:** ничего
 - **Маркер:** CRUD modal с complex forms (useFieldArray, мутации в БД) → запускать ВСЕ THREE: code-reviewer + e2e-testing + security-reviewer. Форма с мутациями = attack surface. Подтверждено на Stage 8.
+
+---
+
+### 2026-04-19 PR #15 — Participants CRUD + Excel import + password flow (5cf59e8)
+- **Diff:** +2022 / -32 строк, 23 файла (4 API routes, 4 UI components, page, hooks, utils, E2E spec, migration, CI/ESLint)
+- **Тип:** mixed (code + docs + config)
+- **Активировано:** code-reviewer, security-reviewer, e2e-testing (написан participants.spec.ts)
+- **Результативно:** code-reviewer КРИТИЧЕН — нашёл баг: `newPassword` отсутствовал в интерфейсе `ResetPasswordInput` и не сериализовался в тело запроса (API получал undefined); security-reviewer ПОЛЕЗЕН — нашёл unsafe type assertion `as Parameters<typeof resetPasswordMutation.mutate>[0]`; e2e-testing необходим (новая CRUD-страница с import-механикой)
+- **Избыточно:** database-reviewer НЕ был активирован — и это ошибка (migration содержала сложную PostgreSQL-функцию `import_participants_bulk` с compensating transaction и SECURITY DEFINER)
+- **Маркер:** Новые API routes с `supabase.auth.admin.*` (createUser/deleteUser) + bulk import RPC + UI формы → запускать ВСЕ ЧЕТЫРЕ: code-reviewer + security-reviewer + e2e-testing + database-reviewer. database-reviewer обязателен при любой migration с PostgreSQL-функцией SECURITY DEFINER или compensating transaction. Подтверждено на Stage 10 Session 1.
