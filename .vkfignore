@@ -1,0 +1,7 @@
+# VKF Compliance Gate ignore patterns
+# Модули, для которых E2E-тесты не требуются.
+# Формат: glob-паттерны, по одному на строку. # — комментарии.
+
+# Пример — общие layout'ы не требуют отдельного E2E:
+# src/app/layout.tsx
+# src/app/globals.css
