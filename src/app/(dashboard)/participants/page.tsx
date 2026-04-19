@@ -154,7 +154,7 @@ export default function ParticipantsPage() {
   function handleResetPassword(participant: UserProfile) {
     const password = generateTempPassword();
     resetPasswordMutation.mutate(
-      { userId: participant.id, workEmail: participant.workEmail, newPassword: password } as Parameters<typeof resetPasswordMutation.mutate>[0],
+      { userId: participant.id, workEmail: participant.workEmail, newPassword: password },
       {
         onSuccess: () => {
           setModal({ type: "password", participant, password, mode: "reset" });
