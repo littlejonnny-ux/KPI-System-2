@@ -37,7 +37,7 @@ jobs:
         with:
           node-version: 20
       - name: Run VKF Compliance Gate
-        run: node scripts/vkf-compliance-gate.js
+        run: node scripts/vkf-compliance-gate.mjs
 
   e2e:
     runs-on: ubuntu-latest

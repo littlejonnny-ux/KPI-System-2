@@ -174,6 +174,45 @@
 - Текст: «Сбросить пароль для **Имя**? Ссылка будет отправлена на **email**»
 - Кнопки: `Button variant="default"` (Подтвердить) + `Button variant="outline"` (Отмена)
 
+### PasswordModal (одноразовый показ пароля)
+
+- **shadcn примитив:** `Dialog`
+- **Когда:** после создания участника или сброса пароля — показать temp password один раз
+- **Ключевые правила:**
+  - Пароль отображается в `<code>` блоке, кнопка копирования рядом (`Copy` иконка)
+  - `data-testid="password-modal"`, `data-testid="password-value"`, `data-testid="copy-password-btn"`, `data-testid="close-password-btn"`
+  - Явное предупреждение: «Запишите пароль — он больше не будет показан»
+  - `mode: "created" | "reset"` меняет заголовок и текст предупреждения
+- **Пример:** `src/features/participants/components/password-modal.tsx`
+
+### ParticipantFormModal
+
+- **shadcn примитив:** `Dialog` + `className="sm:max-w-lg"`
+- **RHF + Zod:** числовые поля (baseSalary, salaryMultiplier) хранятся как `z.string().optional()` в схеме, `parseFloat()` в submit handler — избегает конфликта типов с RHF Control
+- **Layout:**
+  - ФИО: `grid grid-cols-3 gap-3` (Фамилия*, Имя*, Отчество)
+  - Email + Роль: `grid grid-cols-2 gap-3` (email disabled при mode="edit")
+  - Оклад + Мультипликатор: `grid grid-cols-2 gap-3`
+- `data-testid`: `participant-form-modal`, `participant-form`, `input-last-name`, `input-first-name`, `input-middle-name`, `input-work-email`, `select-system-role`, `input-base-salary`, `input-salary-multiplier`, `form-cancel-btn`, `form-submit-btn`
+
+### ExcelImportModal
+
+- **shadcn примитив:** `Dialog` + `className="sm:max-w-2xl"`
+- **Drag-and-drop зона:** `border-2 border-dashed` + `onDrop` / `onDragOver` / `onDragLeave`; скрытый `<input type="file">` с ref
+- **Парсинг:** `await import("xlsx")` — динамический импорт (пакет `xlsx` должен быть установлен)
+- **Ограничения:** только `.xlsx` / `.xls`, максимум 500 строк
+- **COLUMN_MAP:** маппинг заголовков Excel → поля схемы (русские и английские варианты)
+- **Preview table:** показывает до 20 строк; ошибки валидации — до 5 штук с «...и ещё N»
+- `data-testid`: `excel-import-modal`, `excel-drop-zone`, `excel-browse-btn`, `excel-file-input`, `excel-remove-file-btn`, `excel-parse-errors`, `import-result`, `import-cancel-btn`, `import-submit-btn`
+
+### Таблица участников (ParticipantsTable)
+
+- **shadcn примитив:** `Table` стандарт + `DropdownMenu` для действий
+- **Колонки:** ФИО | Email | Роль (Badge) | Статус (Badge) | Действия (DropdownMenu)
+- **Неактивные строки:** `opacity-50` через `className={p.isActive ? "" : "opacity-50"}`
+- **DropdownMenuTrigger:** НЕ использовать `asChild` (Base UI не поддерживает) — стилизовать напрямую через `className`
+- `data-testid`: `participants-table`, `participants-empty`, `participant-row-{id}`, `participant-actions-{id}`, `action-edit-{id}`, `action-reset-password-{id}`, `action-toggle-active-{id}`
+
 ### Валидация (RHF + Zod)
 
 - **Inline-ошибки:** `FormMessage` под каждым полем (shadcn стандарт, `text-destructive text-xs`)
@@ -253,5 +292,6 @@
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 2.2 | 2026-04-19 | Добавлены паттерны: PasswordModal, ParticipantFormModal, ExcelImportModal, ParticipantsTable |
 | 2.0 | 2026-04-14 | Миграция с custom CSS vars на shadcn/ui tokens + Tailwind v4 |
 | 1.x | 2025–2026 | v1 (React 18 + Vite) — см. KPI-System-1 репозиторий |

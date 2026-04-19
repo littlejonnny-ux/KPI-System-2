@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { TEST_CREDENTIALS, TEST_URLS } from './constants';
 
 type Role = 'admin' | 'approver' | 'participant';

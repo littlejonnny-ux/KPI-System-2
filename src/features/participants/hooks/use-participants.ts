@@ -46,6 +46,7 @@ export interface UpdateParticipantInput {
 export interface ResetPasswordInput {
   userId: string;
   workEmail: string;
+  newPassword: string;
 }
 
 export interface ImportParticipantsInput {
@@ -168,7 +169,11 @@ async function resetPassword(input: ResetPasswordInput): Promise<void> {
   const response = await fetch("/api/participants/reset-password", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId: input.userId, workEmail: input.workEmail }),
+    body: JSON.stringify({
+      userId: input.userId,
+      workEmail: input.workEmail,
+      newPassword: input.newPassword,
+    }),
   });
 
   if (!response.ok) {

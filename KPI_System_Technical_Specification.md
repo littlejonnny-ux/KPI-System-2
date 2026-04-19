@@ -378,23 +378,58 @@ draft → active → pending_approval → approved
 
 ### 10.2 Таблица участников
 
-Колонки: Участник (Имя Фамилия) · Уровень участника · Роль в компании · Роль в системе · Согласующий · Кол-во окладов · Действия (Edit, Delete).
+Колонки: ФИО · Email · Роль (Badge) · Статус (Активен / Неактивен) · Действия (Редактировать / Сбросить пароль / Деактивировать-Активировать).
 
-Поиск по имени, email, роли в компании.
+Фильтры: поиск по имени/email, фильтр по роли, фильтр «Показывать неактивных».
+
+**Реализовано:** `src/features/participants/components/participants-table.tsx`
 
 ### 10.3 Импорт из Excel
 
-- Кнопка «Импорт из Excel» → выбор файла .xlsx/.xls
-- Парсинг через библиотеку `xlsx`: ищется столбец с заголовком «ФИО»
-- Модальное окно импорта: таблица с ФИО, полями для email и пароля, выбор роли
-- При подтверждении: серверный API route (service_role) + `INSERT` в users
+- Кнопка «Импорт из Excel» → drag-and-drop зона или выбор файла через `<input type="file">`
+- Парсинг через библиотеку `xlsx` (динамический импорт `await import("xlsx")`) — поддерживаются `.xlsx` и `.xls`
+- Максимум 500 строк на файл
+- COLUMN_MAP: маппинг заголовков → поля (английские и русские варианты; `email`/`рабочий email` → workEmail и т.д.)
+- Предпросмотр: таблица до 20 строк + отображение ошибок валидации
+- При подтверждении:
+  - API route `POST /api/participants/import` (admin only)
+  - Создаёт Supabase Auth users по одному (non-atomic)
+  - Вызывает RPC `import_participants_bulk(p_data jsonb)` для bulk insert в таблицу `users`
+  - При падении RPC — compensating delete всех созданных auth users
+- **Временный пароль:** `generateTempPassword(12)` — генерируется клиентски через `crypto.getRandomValues()`, передаётся в API, в DB не хранится
 
-### 10.4 Сброс пароля
+**PostgreSQL RPC:** `import_participants_bulk(p_data jsonb)` — SECURITY DEFINER, per-row error handling, возвращает `{created, skipped, errors}`.
 
-В режиме редактирования кнопка «Сбросить пароль»:
-- Диалог подтверждения с именем и email
-- `supabase.auth.resetPasswordForEmail` → ссылка на email
-- Fallback при ошибке: генерация временного пароля и отображение админу
+**Реализовано:** `src/features/participants/components/excel-import-modal.tsx`, `src/app/api/participants/import/route.ts`, `supabase/migrations/2026-04-19-01-participants-bulk-import.sql`
+
+### 10.4 Создание участника
+
+Admin создаёт участника через modal форму:
+1. Форма: Фамилия, Имя, Отчество, Email, Роль, Базовый оклад, Мультипликатор
+2. API route `POST /api/participants/create`:
+   - `supabase.auth.admin.createUser({ email, password, email_confirm: true })`
+   - `INSERT INTO users (auth_id, work_email, first_name, ...)`
+   - При ошибке insert — compensating `auth.admin.deleteUser(authUserId)`
+3. После успешного создания — **PasswordModal** показывает сгенерированный пароль один раз
+
+**Реализовано:** `src/app/api/participants/create/route.ts`, `src/features/participants/components/participant-form-modal.tsx`, `src/features/participants/components/password-modal.tsx`
+
+### 10.5 Сброс пароля (admin)
+
+Admin инициирует сброс пароля из таблицы участников:
+- Генерируется новый `generateTempPassword(12)` клиентски
+- API route `POST /api/participants/reset-password`:
+  - Резолвит `auth_id` из таблицы `users` по `userId`
+  - Вызывает `auth.admin.updateUserById(authId, { password: newPassword })`
+- После успеха — **PasswordModal** в режиме `mode="reset"` показывает новый пароль
+
+**TODO:** Добавить отправку пароля на email участника через SMTP (сейчас только one-time display)
+
+**Реализовано:** `src/app/api/participants/reset-password/route.ts`
+
+### 10.6 Деактивация участника
+
+Soft delete через `is_active = false` в таблице `users`. Реализуется через `useParticipants` хук (мутация `toggleActive`). Неактивные участники отображаются с `opacity-50` в таблице.
 
 ---
 
