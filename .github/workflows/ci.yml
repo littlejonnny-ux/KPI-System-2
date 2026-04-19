@@ -25,11 +25,25 @@ jobs:
       - name: Build
         run: npm run build
 
+  vkf-compliance-gate:
+    runs-on: ubuntu-latest
+    needs: quality
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run VKF Compliance Gate
+        run: node scripts/vkf-compliance-gate.js
+
   e2e:
     runs-on: ubuntu-latest
     needs: quality
     if: github.event_name == 'pull_request'
-    continue-on-error: true
+    # continue-on-error убран — тесты блокируют merge при падении
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
