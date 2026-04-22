@@ -85,7 +85,9 @@
 | `playwright.config.ts` | Playwright E2E конфигурация |
 | `.env.local` | Секреты (gitignored) |
 | `.env.local.example` | Шаблон переменных окружения |
-| `.github/workflows/ci.yml` | CI pipeline |
+| `.github/workflows/ci.yml` | CI pipeline (quality, vkf-compliance-gate, migration-safety, e2e, e2e-coverage-check) |
+| `scripts/vkf-compliance-gate.mjs` | VKF Compliance Gate — 6 checks (E2E, BL docs, UI patterns, PROJECT_CONTEXT, DB migrations docs, migration safety) |
+| `scripts/migration-safety-analyzer.mjs` | Migration Safety Analyzer — 3-level SQL safety (L1: DROP TABLE/TRUNCATE/DELETE, L2: DROP COLUMN/ALTER TYPE/RLS) |
 
 ### 4.2 Библиотеки и утилиты
 
@@ -251,3 +253,4 @@ npm run test:e2e       # Playwright E2E tests
 | 2026-04-14 | Stage 8: KPI Library — таблица KPI с фильтрами, CRUD modal (create/edit/delete), DiscretePointsEditor, ScaleRangesEditor, KpiPeriodPicker |
 | 2026-04-15 | Stage 9 Session 1: KPI Cards list page (фильтры по статусу/году), detail page (9 subcomponents: header, reward, kpi-line-row, l2-line-row, fact-input, add-line-modal, comment-modal, kpi-card-audit, trigger-goal-block); E2E тесты (playwright.config.ts + dotenv, kpi-cards.spec.ts — 5 passed / 2 skipped); fix TypeScript: @base-ui/react Select onValueChange (string\|null); fix DB: linked auth_id в таблице users для admin@kpi.local |
 | 2026-04-19 | Stage 10 Session 1: Participants module — 4 UI компонента (participants-table, participant-form-modal, excel-import-modal, password-modal), 3 API routes (create, reset-password, import), SQL migration (import_participants_bulk RPC SECURITY DEFINER), participants/page.tsx, E2E тесты (participants.spec.ts — 7 кейсов, navigation.spec.ts обновлён); fix: DropdownMenuTrigger без asChild (Base UI), RHF+Zod4 без .pipe() transforms |
+| 2026-04-22 | Stage 11: Migration Safety Analyzer + Supabase CLI automation — scripts/migration-safety-analyzer.mjs (3-level SQL safety, L1: DROP TABLE/TRUNCATE/DELETE-no-WHERE, L2: DROP COLUMN/ALTER TYPE/RLS + escape-hatch markers), Check 6 в vkf-compliance-gate.mjs, CI job migration-safety, deny-list в settings.local.json, "Работа с базой данных" в CLAUDE.md, supabase dev dependency |
