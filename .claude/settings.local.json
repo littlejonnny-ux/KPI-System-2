@@ -9,6 +9,13 @@
   },
   "permissions": {
     "defaultMode": "bypassPermissions",
+    "deny": [
+      "Bash(npx supabase db reset*)",
+      "Bash(npx supabase db execute*)",
+      "Bash(supabase db reset*)",
+      "Bash(supabase db execute*)",
+      "Bash(psql*)"
+    ],
     "allow": [
       "Bash(for dir:*)",
       "Bash(do touch:*)",
@@ -25,7 +32,18 @@
       "Bash(node -e \"require\\(''./.claude/hooks/scripts/session-end.js''\\)\")",
       "Bash(npx playwright:*)",
       "Bash(npm install:*)",
-      "Bash(node .claude/hooks/scripts/compliance-monitor.js)"
+      "Bash(node .claude/hooks/scripts/compliance-monitor.js)",
+      "Bash(npx supabase migration new:*)",
+      "Bash(npx supabase db push --dry-run*)",
+      "Bash(npx supabase db push*)",
+      "Bash(npx supabase db diff*)",
+      "Bash(npx supabase db dump*)",
+      "Bash(npx supabase status*)",
+      "Bash(npx supabase start*)",
+      "Bash(npx supabase stop*)",
+      "Bash(npx supabase login*)",
+      "Bash(npx supabase link*)",
+      "Bash(node scripts/migration-safety-analyzer.mjs*)"
     ]
   }
 }
