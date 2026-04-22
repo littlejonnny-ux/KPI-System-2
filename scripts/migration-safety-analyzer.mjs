@@ -115,14 +115,14 @@ const L1_PATTERNS = [
   },
   {
     id:      'truncate',
-    pattern: /\bTRUNCATEb/i,
+    pattern: /\bTRUNCATE\b/i,
     message: 'TRUNCATE detected — deletes all rows without recovery.',
     marker:  'explicitDataLoss',
   },
   {
     id:      'delete-no-where',
-    // DELETE with no WHERE clause (or WHERE followed immediately by semicolon/EOF)
-    pattern: /\bDELETE\s+FROM\s+\S+\s*(?:;|$)/im,
+    // Negative lookahead: match DELETE FROM <table> not followed by WHERE anywhere after it
+    pattern: /\bDELETE\s+FROM\s+\S+(?![\s\S]*\bWHERE\b)/i,
     message: 'DELETE without WHERE — deletes all rows in table.',
     marker:  'explicitDataLoss',
   },

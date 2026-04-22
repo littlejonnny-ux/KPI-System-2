@@ -269,6 +269,7 @@ if (classified.dbMigrationFiles.length > 0) {
       timeout: 30000,
       cwd: ROOT,
       stdio: ['ignore', 'pipe', 'pipe'],
+      maxBuffer: 10 * 1024 * 1024,
     });
     if (analyzerResult.status !== 0) {
       const output = (analyzerResult.stdout || '') + (analyzerResult.stderr || '');
