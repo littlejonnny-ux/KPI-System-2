@@ -98,6 +98,16 @@
 
 ---
 
+### 2026-04-22 PR #16 — Migration Safety Analyzer + Supabase CLI automation (b08877b)
+- **Diff:** +589 / -2 строк, 8 файлов (scripts, CI, Claude config, docs)
+- **Тип:** chore/infrastructure (новые инфра-скрипты, CI jobs, Claude config)
+- **Активировано:** code-reviewer
+- **Результативно:** code-reviewer КРИТИЧЕН — нашёл 2 CRITICAL regex-бага: `TRUNCATEb` (опечатка, TRUNCATE никогда не матчился) + DELETE-without-WHERE false positive на multiline DELETE...WHERE (блокировал легитимные миграции)
+- **Избыточно:** security-reviewer, e2e-testing, database-reviewer (нет auth/API/UI/SQL-миграций)
+- **Маркер:** Новые инфра-скрипты (.mjs) с regex-логикой → code-reviewer ОБЯЗАТЕЛЕН. Regex ошибки — частый источник critical bugs в parser-like коде. Подтверждено на Stage 11.
+
+---
+
 ### 2026-04-19 PR #15 — Participants CRUD + Excel import + password flow (5cf59e8)
 - **Diff:** +2022 / -32 строк, 23 файла (4 API routes, 4 UI components, page, hooks, utils, E2E spec, migration, CI/ESLint)
 - **Тип:** mixed (code + docs + config)

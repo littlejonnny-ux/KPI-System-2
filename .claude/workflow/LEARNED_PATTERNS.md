@@ -96,6 +96,23 @@
 
 ---
 
+### 2026-04-22 SQL safety analysis: порядок стриппинга — dollar-quoted → single-quoted → block comments → line comments
+- **Область:** Node.js ESM скрипты, SQL parsing / regex analysis
+- **Паттерн:** При анализе SQL через регулярные выражения — сначала удалить все строковые литералы и комментарии, иначе false positives. Правильный порядок: (1) `$tag$...$tag$` dollar-quoted, (2) `'...'` single-quoted strings, (3) `"..."` double-quoted identifiers, (4) `/* */` block comments, (5) `--` line comments. Обратный порядок даёт ошибки: `--` внутри строкового литерала.
+- **Почему нетривиально:** `DROP COLUMN` внутри строки (e.g. migration comment) вызовет false positive при наивном regex. Также: regex для DELETE-без-WHERE должен использовать negative lookahead `(?![\s\S]*\bWHERE\b)`, а не `(?:;|$)` — иначе multiline DELETE...WHERE блокируется как опасный.
+- **Пример:**
+  ```js
+  // Правильный порядок:
+  result = result.replace(/\$([^$]*)\$[\s\S]*?\$\1\$/g, "''");  // dollar-quoted
+  result = result.replace(/'(?:[^'\\]|\\.)*'/g, "''");            // single-quoted
+  result = result.replace(/\/\*[\s\S]*?\*\//g, ' ');              // block comments
+  result = result.replace(/--[^\n]*/g, ' ');                      // line comments
+  // DELETE без WHERE:
+  /\bDELETE\s+FROM\s+\S+(?![\s\S]*\bWHERE\b)/i  // negative lookahead
+  ```
+
+---
+
 ### 2026-04-19 Supabase bulk import: двухфазный Auth Admin + compensating transaction
 - **Область:** Supabase Auth Admin API + PostgreSQL RPC + Next.js API routes
 - **Паттерн:** Bulk import в два этапа: (1) создать auth users по одному через `auth.admin.createUser()` — не атомарно, per-row errors; (2) вставить все успешно созданных через `supabase.rpc('import_participants_bulk', { p_data })` — атомарно. Если RPC упал → compensating delete: `Promise.allSettled(authResults.map(({ authId }) => adminClient.auth.admin.deleteUser(authId)))`.
