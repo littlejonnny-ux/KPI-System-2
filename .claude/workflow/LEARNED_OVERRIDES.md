@@ -157,3 +157,14 @@
 - **Результативно:** code-reviewer КРИТИЧЕН — нашёл баг: `newPassword` отсутствовал в интерфейсе `ResetPasswordInput` и не сериализовался в тело запроса (API получал undefined); security-reviewer ПОЛЕЗЕН — нашёл unsafe type assertion `as Parameters<typeof resetPasswordMutation.mutate>[0]`; e2e-testing необходим (новая CRUD-страница с import-механикой)
 - **Избыточно:** database-reviewer НЕ был активирован — и это ошибка (migration содержала сложную PostgreSQL-функцию `import_participants_bulk` с compensating transaction и SECURITY DEFINER)
 - **Маркер:** Новые API routes с `supabase.auth.admin.*` (createUser/deleteUser) + bulk import RPC + UI формы → запускать ВСЕ ЧЕТЫРЕ: code-reviewer + security-reviewer + e2e-testing + database-reviewer. database-reviewer обязателен при любой migration с PostgreSQL-функцией SECURITY DEFINER или compensating transaction. Подтверждено на Stage 10 Session 1.
+
+---
+
+### 2026-04-23 PR #27 — feat(analyzer): Layer 2 — migration filename validation
+
+- **Diff:** +59 / -3 строк, 6 файлов (analyzer, smoke-test, 4 новых fixture)
+- **Тип:** chore/infrastructure (инфра-скрипты, test fixtures — без UI, без бизнес-логики, без prod-миграций)
+- **Активировано:** нет (прямое выполнение CCVS-промпта)
+- **Результативно:** n/a
+- **Избыточно:** code-reviewer, security-reviewer, e2e-testing, database-reviewer — пропускать. Изменения только в `scripts/` инфра-скриптах + test fixtures.
+- **Маркер:** Добавление Layer к migration-safety-analyzer (новая функция + флаг + fixtures) → инфра-задача, все review-агенты не нужны. Ключевой дизайн-паттерн: `--filename <override>` позволяет тестировать name-валидацию без переименования существующих fixture-файлов; `__tests__/` путь пропускает проверку имени автоматически. Подтверждено на PR #27.
