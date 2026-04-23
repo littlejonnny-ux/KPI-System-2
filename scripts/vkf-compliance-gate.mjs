@@ -112,7 +112,7 @@ function classifyFiles(files) {
       result.businessLogicFiles.push(f);
     } else if (
       f.startsWith('supabase/migrations/') ||
-      (f.endsWith('.sql') && !f.startsWith('supabase/rollbacks/'))
+      (f.endsWith('.sql') && !f.startsWith('supabase/rollbacks/') && !f.startsWith('scripts/'))
     ) {
       result.dbMigrationFiles.push(f);
     } else if (f.endsWith('.spec.ts') || f.endsWith('.test.ts')) {
