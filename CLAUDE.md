@@ -50,7 +50,7 @@ npx supabase migration repair --status applied <timestamp>
 
 ## Ограничения CCVS (fail-safes)
 
-- Правка `.github/workflows/*` — запрещена через `settings.local.json`. Нужна? Делает пользователь вручную в VS Code.
+- Правка `.github/workflows/*` — запрещена через `settings.local.json`. Нужна? Используй маркер `[escalate-infra: reason]` — см. `.claude/rules/common/escalate-infra.md`.
 - `supabase db reset`, `db execute`, прямой `psql` — запрещены deny-списком.
 - `db push` — требует явного разрешения пользователя на каждую сессию.
 - `DROP TABLE`, `TRUNCATE`, `DELETE` без `WHERE` — блокируются `migration-safety-analyzer.mjs` (L1, hard block).
@@ -66,6 +66,7 @@ npx supabase migration repair --status applied <timestamp>
 4. `.claude/workflow/LEARNED_PATTERNS.md` — технические паттерны, дополняющие реализацию
 5. `.claude/skills/e2e-testing/SKILL.md` — трёхуровневая схема E2E, счётчик, шаблоны
 6. `.claude/workflow/RETROSPECTIVE.md` — 5 шагов ретроспективы
+7. `.claude/rules/common/escalate-infra.md` — понимание механизма [escalate-infra] маркеров
 
 Эти документы содержат критические развилки процесса и накопленные маркеры обучения,
 которые теряются при сжатии контекста. Без перечитывания LEARNED_OVERRIDES — риск
