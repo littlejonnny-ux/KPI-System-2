@@ -259,6 +259,23 @@
 
 ---
 
+### 2026-04-23 pg_dump baseline: escape-hatch маркеры в PR body, не в commit message
+
+- **Область:** Supabase / GitHub Actions CI / migration-safety-analyzer.mjs
+- **Паттерн:** `migration-safety-analyzer.mjs` в CI читает escape-hatch маркеры из **PR body** через `getPrBodyMarkers()` (GITHUB_EVENT_PATH), а не из commit message. Причина: `git log -1` в CI возвращает synthetic merge commit без маркеров. Вывод: при любой pg_dump baseline или миграции с escape-hatch маркерами — дублировать маркеры в PR body, не только в commit message.
+- **Почему нетривиально:** Локально маркеры в commit message работают (нет synthetic merge). Расхождение CI/local обнаруживается только на 2-3-ий прогон CI. `vkf-compliance-gate.mjs` использует `git log origin/main..HEAD` (видит PR-коммиты), поэтому `[skip-vkf-gate]` в commit message работает — а вот `migration-safety` его не видит.
+- **Escape-hatch маркеры для pg_dump baseline:**
+  ```
+  [execute-reviewed: pg_dump DDL — EXECUTE inside CREATE FUNCTION bodies, not user-supplied SQL]
+  [type-compatible: pg_dump DDL — ADD UNIQUE reflects existing production schema, no duplicates]
+  [rls-reviewed: pg_dump DDL — RLS policies are snapshot of existing production config]
+  [skip-vkf-gate]
+  ```
+  `[skip-vkf-gate]` — точный токен без двоеточия. `[skip-vkf-gate: reason]` НЕ совпадает.
+- **Шаги:** (1) pg_dump с Session Pooler, (2) удалить `\restrict`/`\unrestrict` строки, (3) commit со всеми маркерами, (4) при создании PR — скопировать маркеры в PR body.
+
+---
+
 ### 2026-04-23 Escalate-infra: три-коммитный паттерн для защищённых файлов
 
 - **Область:** CCVS / Claude Code permissions / CI workflow
