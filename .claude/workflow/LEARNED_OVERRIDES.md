@@ -108,6 +108,16 @@
 
 ---
 
+### 2026-04-22 PR #17 — close migration-safety-analyzer gaps (fail-closed + EXECUTE detection) (cb954a8)
+- **Diff:** +451 / -4 строк, 23 файла (scripts, config, fixtures, CI-adjacent)
+- **Тип:** chore/infrastructure (инфра-скрипты, CI, test fixtures — без UI, без бизнес-логики, без prod-миграций)
+- **Активировано:** code-reviewer (предыдущая сессия — нашёл 2 CRITICAL regex-бага: `TRUNCATEb` + DELETE multiline false positive)
+- **Результативно:** code-reviewer КРИТИЧЕН (без него regex-баги ушли бы в main); CI-диагностика в post-merge сессии обнаружила 4 pre-existing проблемы: отсутствие `@playwright/test` в devDeps, конфликт Vitest/Playwright `*.spec.ts`, отсутствие `force-dynamic` на root layout, классификация `scripts/*.sql` как DB-миграций в VKF gate
+- **Избыточно:** security-reviewer, e2e-testing, database-reviewer (нет auth/API/UI/prod-SQL)
+- **Маркер:** Инфра-скрипты (.mjs) + CI config + test fixtures (без auth/API/UI/prod-миграций) → code-reviewer ОБЯЗАТЕЛЕН; security-reviewer, e2e-testing, database-reviewer — пропускать. Подтверждено на Stage 11 PR #17.
+
+---
+
 ### 2026-04-19 PR #15 — Participants CRUD + Excel import + password flow (5cf59e8)
 - **Diff:** +2022 / -32 строк, 23 файла (4 API routes, 4 UI components, page, hooks, utils, E2E spec, migration, CI/ESLint)
 - **Тип:** mixed (code + docs + config)

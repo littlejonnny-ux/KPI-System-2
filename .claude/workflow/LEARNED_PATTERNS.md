@@ -177,6 +177,49 @@
 
 ---
 
+### 2026-04-22 Next.js "use client" + SSG: `createBrowserClient` падает при prerender
+- **Область:** Next.js App Router + Supabase SSR + static prerendering
+- **Паттерн:** Если root `layout.tsx` оборачивает `AuthProvider` (`"use client"`), а тот вызывает `createBrowserClient()` в `useMemo`, — Next.js при `next build` пытается статически пререндерить `/_not-found` через этот layout. `createBrowserClient` запускается без `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` → crash. Решение: `export const dynamic = "force-dynamic"` на `src/app/layout.tsx`.
+- **Почему нетривиально:** Ошибка только в `next build`, не в `next dev`. Сообщение об ошибке («Your project's URL and API key are required») указывает на `@supabase/ssr`, но не объясняет, что это статический prerender `/_not-found`. `force-dynamic` — правильный выбор для auth-gated app: все маршруты нуждаются в cookie-сессии, статический prerender бессмысленен.
+- **Пример:**
+  ```tsx
+  // src/app/layout.tsx
+  export const dynamic = "force-dynamic"; // ← до metadata и default export
+  export const metadata: Metadata = { ... };
+  export default function RootLayout({ children }) { ... }
+  ```
+
+---
+
+### 2026-04-22 Vitest vs Playwright: конфликт `*.spec.ts` паттерна
+- **Область:** Vitest + Playwright в одном проекте
+- **Паттерн:** Vitest по умолчанию включает `**/*.spec.ts` в свой test runner. Если в проекте есть Playwright e2e-тесты с `.spec.ts`, Vitest пытается их запустить и падает: `Playwright Test did not expect test.describe() to be called here`. Решение: добавить в `vitest.config.ts` → `test.exclude: ["**/node_modules/**", "**/e2e/**", "**/*.spec.ts"]`. Unit-тесты проекта используют `.test.ts`, e2e — `.spec.ts` — разделение по суффиксу достаточно.
+- **Почему нетривиально:** Ошибка возникает только когда `@playwright/test` реально установлен (как devDependency). До установки TypeScript выдавал «Cannot find module "@playwright/test"»; после — Vitest начинал подхватывать spec-файлы. Оба симптома — одна причина: `@playwright/test` не был в devDependencies изначально.
+- **Пример:**
+  ```ts
+  // vitest.config.ts
+  test: {
+    exclude: ["**/node_modules/**", "**/e2e/**", "**/*.spec.ts"],
+  }
+  ```
+
+---
+
+### 2026-04-22 GitHub Rulesets vs Branch Protection: `--admin` не обходит Rulesets
+- **Область:** GitHub CLI + Repository Rulesets
+- **Паттерн:** `gh pr merge --admin` обходит классическую Branch Protection, но НЕ Repository Rulesets (введены в 2023). Rulesets могут иметь `current_user_can_bypass: "never"` — даже администратор репозитория не может смержить без прохождения required status checks. Для диагностики: `gh api repos/{owner}/{repo}/rulesets` → найти активный ruleset → `required_status_checks.contexts[]` — полный список обязательных проверок.
+- **Почему нетривиально:** `gh pr merge --admin` завершается с «GraphQL: Repository rule violations» без объяснения причины. Нет способа байпасить Rulesets через CLI — нужно либо пройти все checks, либо изменить ruleset через GitHub UI (требует admin-прав на Settings).
+- **Пример:**
+  ```bash
+  # Проверить required checks:
+  gh api repos/OWNER/REPO/rulesets/RULESET_ID | jq '.conditions, .rules[].parameters.required_status_checks'
+  # Проверить bypass permissions:
+  gh api repos/OWNER/REPO/rulesets/RULESET_ID | jq '.current_user_can_bypass'
+  # → "never" означает: только реальный pass CI
+  ```
+
+---
+
 ### 2026-04-15 Supabase RPC для атомарных операций (approve_card_line)
 - **Область:** Supabase + PostgreSQL RPC
 - **Паттерн:** Бизнес-операции, требующие нескольких UPDATE в одной транзакции (например, approve line + recalculate card total + update card status), вынесены в PostgreSQL function и вызываются через `.rpc('approve_card_line', { params })`. Один round-trip, атомарность гарантирована на уровне БД.
