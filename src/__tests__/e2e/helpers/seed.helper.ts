@@ -13,7 +13,7 @@ export interface SeedCardResult {
 
 export async function navigateToKpiCards(page: Page): Promise<void> {
   await page.goto('/kpi-cards');
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('load');
 }
 
 export async function waitForCardsList(page: Page): Promise<void> {
