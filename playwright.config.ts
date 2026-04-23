@@ -18,9 +18,12 @@ export default defineConfig({
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
   ],
-  webServer: process.env.CI ? undefined : {
-    command: 'npm run dev',
+  webServer: {
+    command: process.env.CI ? 'npm run build && npm run start' : 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    timeout: 180_000,
+    stdout: process.env.CI ? 'pipe' : 'ignore',
+    stderr: 'pipe',
   },
 });
