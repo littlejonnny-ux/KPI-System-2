@@ -21,6 +21,10 @@
       "Write(.github/workflows/*)"
     ],
     "allow": [
+      "Edit(.github/workflows/ci.yml)",
+      "Edit(.github/workflows/*)",
+      "Write(.github/workflows/ci.yml)",
+      "Write(.github/workflows/*)",
       "Bash(for dir:*)",
       "Bash(do touch:*)",
       "Bash(done)",
