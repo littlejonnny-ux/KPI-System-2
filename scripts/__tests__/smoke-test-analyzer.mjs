@@ -33,19 +33,31 @@ const FIXTURES = [
   { file: '13-execute-with-concat.sql',        expected: 'BLOCK' },
   { file: '14-execute-with-marker.sql',        expected: 'WARN',
     markers: { executeReviewed: true } },
+  // Filename validation tests — use nameOverride to simulate different filenames
+  { file: 'invalid-name-with-hyphens.sql',    expected: 'BLOCK',
+    nameOverride: '2026-04-19-01-test.sql' },
+  { file: 'invalid-name-short-timestamp.sql', expected: 'BLOCK',
+    nameOverride: '202604_test.sql' },
+  { file: 'invalid-name-uppercase.sql',       expected: 'BLOCK',
+    nameOverride: '20260419010000_TestTable.sql' },
+  { file: 'valid-name-snake-case.sql',        expected: 'PASS',
+    nameOverride: '20260419010000_create_users.sql' },
 ];
 
 let passed = 0;
 let failed = 0;
 const failures = [];
 
-for (const { file, expected, markers } of FIXTURES) {
+for (const { file, expected, markers, nameOverride } of FIXTURES) {
   const filePath = path.join(FIXTURES_DIR, file);
   // --no-git-markers prevents the analyzer from reading the current git commit message,
   // so test results don't depend on what markers happen to be in the last commit.
   const args = ['node', ANALYZER, '--file', filePath, '--no-git-markers'];
   if (markers) {
     args.push('--markers', JSON.stringify(markers));
+  }
+  if (nameOverride) {
+    args.push('--filename', nameOverride);
   }
 
   const result = spawnSync(args[0], args.slice(1), {
