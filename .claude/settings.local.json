@@ -38,6 +38,8 @@
       "Bash(npm install:*)",
       "Bash(node .claude/hooks/scripts/compliance-monitor.js)",
       "Bash(npx supabase migration new:*)",
+      "Bash(npx supabase migration list*)",
+      "Bash(npx supabase migration repair:*)",
       "Bash(npx supabase db push --dry-run*)",
       "Bash(npx supabase db push*)",
       "Bash(npx supabase db diff*)",
