@@ -220,6 +220,26 @@
 
 ---
 
+### 2026-04-23 GitHub Actions: `git log -1` возвращает synthetic merge commit, не PR-коммит
+- **Область:** GitHub Actions CI + vkf-compliance-gate / любые CI-скрипты, читающие commit messages
+- **Паттерн:** При триггере `pull_request` GitHub Actions автоматически создаёт synthetic merge commit `refs/pull/N/merge` (merge PR branch into base). `git log -1 --pretty=%B` возвращает именно этот merge-коммит (`Merge <sha1> into <sha2>`), а не последний коммит PR. Любые маркеры в сообщениях реальных PR-коммитов оказываются невидимы. Правильный подход: `git log origin/main..HEAD --pretty=%B` — все коммиты ветки PR.
+- **Почему нетривиально:** Локально `git log -1` даёт правильный результат (нет synthetic merge). В CI появляется расхождение. `[skip-vkf-gate]` маркер в коммите полностью игнорируется на всех PR без этого фикса.
+- **Пример:**
+  ```js
+  // WRONG — только synthetic merge commit в CI:
+  const lastCommitMsg = git('log', '-1', '--pretty=%B');
+  if (lastCommitMsg.includes('[skip-vkf-gate]')) { ... }
+
+  // CORRECT — все PR-коммиты + fallback:
+  const lastCommitMsg = git('log', '-1', '--pretty=%B');
+  const prCommitMsgs = git('log', 'origin/main..HEAD', '--pretty=%B')
+    || git('log', 'main..HEAD', '--pretty=%B');
+  const allCommitMsgs = lastCommitMsg + '\n' + prCommitMsgs;
+  if (allCommitMsgs.includes('[skip-vkf-gate]')) { ... }
+  ```
+
+---
+
 ### 2026-04-15 Supabase RPC для атомарных операций (approve_card_line)
 - **Область:** Supabase + PostgreSQL RPC
 - **Паттерн:** Бизнес-операции, требующие нескольких UPDATE в одной транзакции (например, approve line + recalculate card total + update card status), вынесены в PostgreSQL function и вызываются через `.rpc('approve_card_line', { params })`. Один round-trip, атомарность гарантирована на уровне БД.
