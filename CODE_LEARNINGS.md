@@ -64,3 +64,36 @@ crypto.getRandomValues(array);
 return Array.from(array, (byte) => CHARSET[byte % CHARSET.length]).join("");
 ```
 Charset исключает визуально похожие символы: `0/O`, `1/l/I` и т.д.
+
+## Playwright: networkidle зависает с Supabase Realtime
+
+`waitForLoadState('networkidle')` никогда не выполняется в CI, если страница использует Supabase Realtime — WebSocket держит соединение "активным" indefinitely. Использовать `'load'` вместо `'networkidle'` для `page.goto()` и всех `waitForLoadState`. Проявляется только в CI (в headed dev-режиме timeout не достигается, потому что тест завершается раньше).
+
+- **Неверно:** `await page.waitForLoadState('networkidle')`
+- **Верно:** `await page.waitForLoadState('load')`
+
+## pg_dump baseline через Session Pooler (без Docker Desktop)
+
+Стандартная команда `npx supabase db dump` требует Docker Desktop. Альтернатива — прямой `pg_dump` через Session Pooler (IPv4-совместимый):
+
+```bash
+pg_dump "postgresql://postgres.<project-ref>:<password>@aws-0-eu-west-1.pooler.supabase.com:5432/postgres" \
+  --schema=public \
+  --schema-only \
+  --no-owner \
+  --no-privileges \
+  -f supabase/migrations/20260101000000_baseline_schema.sql
+```
+
+**Важно:** Session Pooler добавляет нестандартные маркеры `\restrict <token>` в начало и `\unrestrict <token>` в конец файла. Это не SQL и не pg_dump директивы — это артефакт пулера. Их нужно удалить перед коммитом, иначе `supabase db push` завершится с ошибкой.
+
+**Escape-hatch маркеры** для коммита с pg_dump baseline:
+- `[execute-reviewed: ...]` — EXECUTE внутри CREATE FUNCTION тел — это DDL от pg_dump, не пользовательский код
+- `[type-compatible: ...]` — ADD UNIQUE constraints отражают существующую схему, дубликатов нет
+- `[rls-reviewed: ...]` — RLS политики — снимок существующей production конфигурации
+
+**`[skip-vkf-gate]` — точный токен без двоеточия.** Скрипт проверяет `allCommitMsgs.includes('[skip-vkf-gate]')` — с закрывающей скобкой. `[skip-vkf-gate: reason]` не совпадает (двоеточие идёт до закрывающей скобки).
+
+## Migration-safety-analyzer: маркеры читаются из PR body в CI, а не только из commit message
+
+В GitHub Actions `git log -1 --pretty=%B` возвращает synthetic merge commit (не commit PR-ветки). Поэтому маркеры из commit message PR могут не находиться. `migration-safety-analyzer.mjs` комбинирует оба источника: `getCommitMarkers()` + `getPrBodyMarkers()` (читает `GITHUB_EVENT_PATH`). Для надёжности — дублируй escape-hatch маркеры в PR body, не только в commit message.

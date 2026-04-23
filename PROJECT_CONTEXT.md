@@ -22,6 +22,7 @@
 | Vercel URL | TBD |
 | Admin логин | `admin` |
 | Admin email в Supabase Auth | `admin@kpi.local` |
+| DB baseline | `supabase/migrations/20260101000000_baseline_schema.sql` — реальный pg_dump от 2026-04-23 |
 
 > Токены, ключи и пароли хранятся в `.env.local` (gitignored) и переменных окружения Vercel. Не добавлять в этот файл.
 
@@ -254,3 +255,5 @@ npm run test:e2e       # Playwright E2E tests
 | 2026-04-15 | Stage 9 Session 1: KPI Cards list page (фильтры по статусу/году), detail page (9 subcomponents: header, reward, kpi-line-row, l2-line-row, fact-input, add-line-modal, comment-modal, kpi-card-audit, trigger-goal-block); E2E тесты (playwright.config.ts + dotenv, kpi-cards.spec.ts — 5 passed / 2 skipped); fix TypeScript: @base-ui/react Select onValueChange (string\|null); fix DB: linked auth_id в таблице users для admin@kpi.local |
 | 2026-04-19 | Stage 10 Session 1: Participants module — 4 UI компонента (participants-table, participant-form-modal, excel-import-modal, password-modal), 3 API routes (create, reset-password, import), SQL migration (import_participants_bulk RPC SECURITY DEFINER), participants/page.tsx, E2E тесты (participants.spec.ts — 7 кейсов, navigation.spec.ts обновлён); fix: DropdownMenuTrigger без asChild (Base UI), RHF+Zod4 без .pipe() transforms |
 | 2026-04-22 | Stage 11: Migration Safety Analyzer + Supabase CLI automation — scripts/migration-safety-analyzer.mjs (3-level SQL safety, L1: DROP TABLE/TRUNCATE/DELETE-no-WHERE, L2: DROP COLUMN/ALTER TYPE/RLS + escape-hatch markers), Check 6 в vkf-compliance-gate.mjs, CI job migration-safety, deny-list в settings.local.json, "Работа с базой данных" в CLAUDE.md, supabase dev dependency |
+| 2026-04-23 | CI E2E fix: 9 GitHub Secrets добавлены (Supabase URL/keys + 3 тестовых пользователя), seed.helper.ts: waitForLoadState('networkidle') → 'load' (Supabase Realtime WebSocket блокировал networkidle в CI). PRs #21, #22 зелёные и замёржены, LEARNED_OVERRIDES + LEARNED_PATTERNS задокументированы в PR #23. |
+| 2026-04-23 | DB baseline: реальный pg_dump production Supabase схемы зафиксирован как supabase/migrations/20260101000000_baseline_schema.sql (76 KB, 2416 строк DDL). Метод: pg_dump --schema=public --schema-only --no-owner --no-privileges через Session Pooler (IPv4). Escape-hatch markers: [execute-reviewed], [type-compatible], [rls-reviewed], [skip-vkf-gate]. PR #24. |
