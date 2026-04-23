@@ -94,6 +94,20 @@ pg_dump "postgresql://postgres.<project-ref>:<password>@aws-0-eu-west-1.pooler.s
 
 **`[skip-vkf-gate]` — точный токен без двоеточия.** Скрипт проверяет `allCommitMsgs.includes('[skip-vkf-gate]')` — с закрывающей скобкой. `[skip-vkf-gate: reason]` не совпадает (двоеточие идёт до закрывающей скобки).
 
+## Migration-safety-analyzer: валидация имени файла как Layer 2
+
+`migration-safety-analyzer.mjs` проверяет имя файла миграции **до** анализа содержимого. Regex: `^\d{14}_[a-z][a-z0-9_]*\.sql$`. Файлы с дефисами, коротким timestamp или заглавными буквами блокируются сразу с BLOCK.
+
+**Паттерн для smoke-тестов:** физические fixture-файлы в `__tests__/` имеют нестандартные имена (`01-drop-table.sql` и т.д.) — они пропускают проверку имени. Для тестирования самой валидации используется флаг `--filename <override>`, который подставляет симулируемое имя без переименования файла.
+
+```js
+// В smoke-test-analyzer.mjs:
+{ file: 'invalid-name-with-hyphens.sql', expected: 'BLOCK', nameOverride: '2026-04-19-01-test.sql' }
+// Runner добавляет: --filename '2026-04-19-01-test.sql'
+```
+
+`path.basename(filePath)` — стандартный способ извлечь имя файла из пути для regex-проверки.
+
 ## Migration-safety-analyzer: маркеры читаются из PR body в CI, а не только из commit message
 
 В GitHub Actions `git log -1 --pretty=%B` возвращает synthetic merge commit (не commit PR-ветки). Поэтому маркеры из commit message PR могут не находиться. `migration-safety-analyzer.mjs` комбинирует оба источника: `getCommitMarkers()` + `getPrBodyMarkers()` (читает `GITHUB_EVENT_PATH`). Для надёжности — дублируй escape-hatch маркеры в PR body, не только в commit message.
