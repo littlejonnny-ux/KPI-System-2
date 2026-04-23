@@ -5,6 +5,8 @@ import { QueryProvider } from "@/providers/query-provider";
 import { AuthProvider } from "@/features/auth/auth-provider";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 const geologica = Geologica({
   variable: "--font-sans",
   subsets: ["latin", "cyrillic"],
