@@ -118,6 +118,16 @@
 
 ---
 
+### 2026-04-23 PR #19 — chore: Supabase migration baseline setup
+- **Diff:** +47 / -2 строк, 5 файлов (migrations, CLAUDE.md, settings.local.json, scripts/vkf-compliance-gate.mjs)
+- **Тип:** infra/chore (миграции + документация)
+- **Активировано:** нет (прямое выполнение CCVS-промпта)
+- **Результативно:** n/a
+- **Избыточно:** n/a
+- **Маркер:** Изменения в `supabase/migrations/` + `CLAUDE.md` + `scripts/vkf-compliance-gate.mjs` как infra → code-reviewer и security-reviewer не требуются для infra/baseline задач.
+
+---
+
 ### 2026-04-19 PR #15 — Participants CRUD + Excel import + password flow (5cf59e8)
 - **Diff:** +2022 / -32 строк, 23 файла (4 API routes, 4 UI components, page, hooks, utils, E2E spec, migration, CI/ESLint)
 - **Тип:** mixed (code + docs + config)
