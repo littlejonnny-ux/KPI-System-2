@@ -14,7 +14,11 @@
       "Bash(npx supabase db execute*)",
       "Bash(supabase db reset*)",
       "Bash(supabase db execute*)",
-      "Bash(psql*)"
+      "Bash(psql*)",
+      "Edit(.github/workflows/ci.yml)",
+      "Edit(.github/workflows/*)",
+      "Write(.github/workflows/ci.yml)",
+      "Write(.github/workflows/*)"
     ],
     "allow": [
       "Bash(for dir:*)",
