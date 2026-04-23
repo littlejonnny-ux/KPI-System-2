@@ -41,7 +41,9 @@ const failures = [];
 
 for (const { file, expected, markers } of FIXTURES) {
   const filePath = path.join(FIXTURES_DIR, file);
-  const args = ['node', ANALYZER, '--file', filePath];
+  // --no-git-markers prevents the analyzer from reading the current git commit message,
+  // so test results don't depend on what markers happen to be in the last commit.
+  const args = ['node', ANALYZER, '--file', filePath, '--no-git-markers'];
   if (markers) {
     args.push('--markers', JSON.stringify(markers));
   }

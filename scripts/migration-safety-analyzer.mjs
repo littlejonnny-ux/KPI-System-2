@@ -122,32 +122,29 @@ function extractPlpgsqlBodies(rawSql) {
 // Detect dangerous EXECUTE patterns inside plpgsql bodies:
 //   EXECUTE variable;
 //   EXECUTE 'literal' || expr
-//   EXECUTE format('...%s...', ...)  — only when %s/%I in format string
+//   EXECUTE format(...)
 // Returns true if a suspicious EXECUTE is found.
 function hasDangerousExecute(bodies) {
   for (const body of bodies) {
     // Strip line comments inside body first (simple pass)
     const cleaned = body.replace(/--[^\n]*/g, ' ');
 
-    // EXECUTE followed by a non-literal expression (variable or concatenation or format)
-    // Patterns:
-    //   EXECUTE identifier              — dynamic variable
-    //   EXECUTE 'str' ||                — string concatenation
-    //   EXECUTE format(                 — format() call
-    const execRe = /\bEXECUTE\s+(?!'\s*(?:SELECT|INSERT|UPDATE|WITH)\b)(\S[^\n;]*)/gi;
+    // Match EXECUTE followed by any expression (no lookahead — check statically after capture)
+    const execRe = /\bEXECUTE\s+(\S[^\n;]*)/gi;
     let m;
     while ((m = execRe.exec(cleaned)) !== null) {
       const expr = m[1].trimEnd();
-      // Safe: EXECUTE 'static string' with no concatenation or dangerous keywords
-      const isStaticLiteral = /^'[^']*'\s*;?\s*$/.test(expr);
+
+      // Safe: EXECUTE 'static string' with no concatenation (handles PostgreSQL '' escapes)
+      const isStaticLiteral = /^'(?:''|[^'])*'\s*(?:INTO\s+\S+)?\s*;?\s*$/.test(expr);
       if (isStaticLiteral) continue;
 
-      // Dangerous: concatenation, format(), or bare identifier
+      // Dangerous: concatenation, format(), or bare identifier (dynamic variable)
       const isDangerous =
         expr.includes('||') ||
         /\bformat\s*\(/.test(expr) ||
-        // bare identifier (no quote at start)
-        /^[a-z_][a-z0-9_]*/i.test(expr);
+        // bare identifier at start — dynamic variable (not a quoted string)
+        /^[a-z_]\w*/i.test(expr);
 
       if (isDangerous) return true;
     }
@@ -331,8 +328,10 @@ function main() {
       }
     }
 
-    const commitMarkers  = getCommitMarkers();
-    const prBodyMarkers  = getPrBodyMarkers();
+    // --no-git-markers: disable reading markers from git/PR (used in smoke tests)
+    const noGitMarkers = process.argv.includes('--no-git-markers');
+    const commitMarkers = noGitMarkers ? parseMarkers('') : getCommitMarkers();
+    const prBodyMarkers = noGitMarkers ? parseMarkers('') : getPrBodyMarkers();
     const markers = {
       explicitDataLoss: injectedMarkers.explicitDataLoss || commitMarkers.explicitDataLoss || prBodyMarkers.explicitDataLoss,
       columnUnused:     injectedMarkers.columnUnused     || commitMarkers.columnUnused     || prBodyMarkers.columnUnused,
